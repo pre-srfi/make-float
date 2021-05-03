@@ -65,7 +65,6 @@ case where the fractional part has leading zeros.
 ## Examples
 
 ```Scheme
-
 (inexact-real-from-strings "-123" "45" "6")  ; => -123.45e6
 (inexact-real-from-integers -123   45 2 6)   ; => -123.45e6
 ```
@@ -80,7 +79,7 @@ its input arguments. It uses `string-pad` from SRFI 13.
   (string->number (string-append "#d" int "." frac "e" exp)))
 
 (define (inexact-real-from-integers int frac frac-length exp)
-  (strings->inexact/
+  (inexact-real-from-strings
    (number->string int)
    (string-pad (number->string frac) frac-length #\0)
    (number->string exp)))
