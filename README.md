@@ -26,48 +26,67 @@ implementation's native `string->number` procedure.
 
 ### Make reals
 
-In the following procedures, the `precision` argument says what
-floating-point precision to use for the number being built.
+The procedures in this section return an inexact real number built
+from components using the same method as the Scheme implementation's
+version of `string->number` does.
 
-The standard values for `precision` are all symbols whose names are
-one lowercase letter each. The symbol `e` means to use the underlying
-Scheme implementation's default precision (which may be configurable
-in a non-standard way). The symbols `s`, `f`, `d`, `l` mean a short,
-single, double, and long float, respectively. These precisions are
-explained in R7RS section 6.2.5. (_Syntax of numerical constants_).
+The `precision` argument says what floating-point precision to use for
+the number being built.
+
+The standard values for `precision` are the lowercase letters `e`,
+`s`, `f`, `d`, `l`. The letter `e` means to use the underlying Scheme
+implementation's default precision (which may be configurable in a
+non-standard way). The other letters stand for a short, single,
+double, and long float, respectively. These precisions are explained
+in R7RS section 6.2.5. (_Syntax of numerical constants_). The standard
+letters may be given as a character object, a one-character string, or
+a symbol whose name is a one-character string.
 
 There may be other valid values for the `precision` argument with an
 implementation-defined meaning.
 
-`(inexact-real-from-strings precision int frac exp) -> real`
+`(inexact-real-from-strings int frac precision exp) -> real`
 
-Passed the precision followed by three strings with the base-10 digits
-of the integer part, fractional part, and the exponent, respectively.
-Returns a real number built from those using the same method as the
-Scheme implementation's version of `string->number` does.
+Passed `int` and `frac` strings, the precision, and an `exp` string.
 
-All strings must contain only digits with no whitespace or other
-characters. The `int` and `exp` strings are allowed to start with a
-`+` or `-` character indicating the sign of the integer part and the
-exponent, respectively. No sign is the same as a `+` sign.
+`int`, `frac`, and `exp` give the digits of the integer part, the
+fractional part, and the exponent, respectively. It is an error to
+pass strings containing characters other than decimal digits. Of
+particular note is that no whitespace, underscores, commas, or periods
+are permitted. A zero-length string has the same meaning as `"0"`.
 
-`(inexact-real-from-integers precision int frac frac-length exp) -> real`
+However, the `int` and `exp` strings are allowed to start with a `+`
+or `-` character indicating the sign of the integer part and the
+exponent, respectively. It is an error if the sign is repeated, or if
+it is not the first character of the string. A string consisting only
+of a sign is not permitted; the sign is only valid when followed by
+one or more digits. A string starting with a digit is interpreted the
+same way as a string starting with a `+` sign.
 
-Passed the precision followed by four integers. Returns a real number
-built from those using the same method as the Scheme implementation's
-version of `string->number` does.
+`(inexact-real-from-integers int frac frac-length precision exp) -> real`
 
-* `int` is the integer part and can be negative.
+Passed `int`, `frac`, and `frac-length` integers, the precision, and an
+`exp` integer.
 
-* `frac` are the fractional digits taken as a whole number and must be
-nonnegative. E.g. the `frac` value for `0.1234` would be `1234`. The
-`frac` value for `0.0015` would be `15`.
+`int` gives the integer part without the fractional part. `exp` is the
+exponent (i.e. the power of 10).
 
-* `frac-length` says how many decimal digits there are intended to be
-in the fractional part. This information is needed to account for the
-case where the fractional part has leading zeros.
+`frac` are the digits making up the fractional part interpreted as an
+integer in their own right. E.g. the `frac` value for `0.1234` would
+be `1234`. The value for `0.0015` would be `15`.
 
-* `exp` is the exponent (i.e. the power of 10) and can be negative.
+`frac-length` says how many decimal places there are supposed to be in
+the fractional part. The `frac-length` argument is needed to
+distinguish fractional parts with different numbers of leading zeros.
+E.g. the `frac-length` value for both `0.1234` and `0.0015` would be
+`4`.
+
+Pass an `int` or `exp` value of `0` for a number without an integer
+part or an exponent, respectively. Pass `frac` and `frac-length`
+values of `0` for a number without a fractional part.
+
+All integers must be exact. One or both of `int` and `exp` may be
+negative. It is an error to pass a negative `frac` or `frac-length`.
 
 ### Break reals
 
@@ -78,8 +97,8 @@ case where the fractional part has leading zeros.
 ## Examples
 
 ```Scheme
-(inexact-real-from-strings  'e "-123" "45" "6")  ; => -123.45e6
-(inexact-real-from-integers 'e  -123   45 2 6)   ; => -123.45e6
+(inexact-real-from-strings  "-123" "45"  'e "6")  ; => -123.45e6
+(inexact-real-from-integers  -123   45 2 'e  6)   ; => -123.45e6
 ```
 
 ## Implementation
@@ -88,15 +107,17 @@ This sample implementation is slow and does not check the validity of
 its input arguments. It uses `string-pad` from SRFI 13.
 
 ```Scheme
-(define (inexact-real-from-strings precision int frac exp)
-  (string->number (string-append "#d" int "." frac
-                                 (symbol->string precision) exp)))
+(define (inexact-real-from-strings int frac precision exp)
+  (let ((precision (cond ((char?   precision) (string precision))
+                         ((symbol? precision) (symbol->string precision))
+                         ((string? precision) precision))))
+    (string->number (string-append "#d" int "." frac precision exp))))
 
-(define (inexact-real-from-integers precision int frac frac-length exp)
+(define (inexact-real-from-integers int frac frac-length precision exp)
   (inexact-real-from-strings
-   precision
    (number->string int)
    (string-pad (number->string frac) frac-length #\0)
+   precision
    (number->string exp)))
 ```
 
