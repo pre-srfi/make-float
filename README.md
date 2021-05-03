@@ -60,8 +60,8 @@ or `-` character indicating the sign of the integer part and the
 exponent, respectively. It is an error if the sign is repeated, or if
 it is not the first character of the string. A string consisting only
 of a sign is not permitted; the sign is only valid when followed by
-one or more digits. A string starting with a digit is interpreted the
-same way as a string starting with a `+` sign.
+one or more digits. A string starting with a digit is interpreted as
+if there was an implicit `+` sign in front.
 
 `(inexact-real-from-integers int frac frac-length precision exp) -> real`
 
