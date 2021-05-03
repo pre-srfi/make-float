@@ -101,6 +101,10 @@ In Proceedings of the ACM SIGPLAN ’90 Conference on Programming
 Language Design and Implementation, pages 92–101. Proceedings
 published as SIGPLAN Notices 25(6), June 1990.
 
+Sample implementation of the C language function
+[`atof()`](http://www.beedub.com/Sprite093/src/machserver/1.098/libc/atof.c).
+It converts a string to a double float.
+
 Common Lisp [`decode-float`
 function](http://clhs.lisp.se/Body/f_dec_fl.htm).
 
