@@ -30,10 +30,11 @@ In the following procedures, the `precision` argument says what
 floating-point precision to use for the number being built. The value
 is a symbol whose name is one lowercase letter. The symbol `e` means
 to use the underlying Scheme implementation's default precision (which
-may be cofigurable in a non-standard way). The symbols `s`, `f`, `d`,
+may be configurable in a non-standard way). The symbols `s`, `f`, `d`,
 `l` mean a short, single, double, and long float, respectively. These
 precisions are explained in R7RS section 6.2.5. (_Syntax of numerical
-constants_).
+constants_). There may be other valid values for the `precision`
+argument with an implementation-defined meaning.
 
 `(inexact-real-from-strings precision int frac exp) -> real`
 
