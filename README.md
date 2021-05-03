@@ -26,23 +26,31 @@ implementation's native `string->number` procedure.
 
 ### Make reals
 
-`(inexact-real-from-strings int frac exp) -> real`
+In the following procedures, the `precision` argument says what
+floating-point precision to use for the number being built. The value
+is a one-letter symbol. The symbol `e` means to use the underlying
+Scheme implementation's default precision (which may be cofigurable in
+a non-standard way). The symbols `s`, `f`, `d`, `l` mean a short,
+single, double, and long float, respectively. These precisions are
+explained in R7RS section 6.2.5. (_Syntax of numerical constants_).
 
-Passed three strings with the base-10 digits of the integer part,
-fractional part, and the exponent, respectively. Returns a real number
-built from those using the same method as the Scheme implementation's
-version of `string->number` does.
+`(inexact-real-from-strings precision int frac exp) -> real`
+
+Passed the precision followed by three strings with the base-10 digits
+of the integer part, fractional part, and the exponent, respectively.
+Returns a real number built from those using the same method as the
+Scheme implementation's version of `string->number` does.
 
 All strings must contain only digits with no whitespace or other
 characters. The `int` and `exp` strings are allowed to start with a
 `+` or `-` character indicating the sign of the integer part and the
 exponent, respectively. No sign is the same as a `+` sign.
 
-`(inexact-real-from-integers int frac frac-length exp) -> real`
+`(inexact-real-from-integers precision int frac frac-length exp) -> real`
 
-Passed four integers. Returns a real number built from those using the
-same method as the Scheme implementation's version of `string->number`
-does.
+Passed the precision followed by four integers. Returns a real number
+built from those using the same method as the Scheme implementation's
+version of `string->number` does.
 
 * `int` is the integer part and can be negative.
 
@@ -65,8 +73,8 @@ case where the fractional part has leading zeros.
 ## Examples
 
 ```Scheme
-(inexact-real-from-strings "-123" "45" "6")  ; => -123.45e6
-(inexact-real-from-integers -123   45 2 6)   ; => -123.45e6
+(inexact-real-from-strings  'e "-123" "45" "6")  ; => -123.45e6
+(inexact-real-from-integers 'e  -123   45 2 6)   ; => -123.45e6
 ```
 
 ## Implementation
@@ -75,11 +83,13 @@ This sample implementation is slow and does not check the validity of
 its input arguments. It uses `string-pad` from SRFI 13.
 
 ```Scheme
-(define (inexact-real-from-strings int frac exp)
-  (string->number (string-append "#d" int "." frac "e" exp)))
+(define (inexact-real-from-strings precision int frac exp)
+  (string->number (string-append "#d" int "." frac
+                                 (symbol->string precision) exp)))
 
-(define (inexact-real-from-integers int frac frac-length exp)
+(define (inexact-real-from-integers precision int frac frac-length exp)
   (inexact-real-from-strings
+   precision
    (number->string int)
    (string-pad (number->string frac) frac-length #\0)
    (number->string exp)))
